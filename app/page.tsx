@@ -1,5 +1,10 @@
+import EventList from "@/components/EventList";
 import Image from "next/image";
 
 export default function Home() {
-  return <div>Welcome to ticketer</div>;
+  return (
+    <div>
+      <EventList />
+    </div>
+  );
 }

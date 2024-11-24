@@ -27,7 +27,7 @@ function SyncUserWithConvex() {
     syncUser();
   }, [user, updateUser]);
 
-  return <div>SyncUserWithConvex</div>;
+  return null;
 }
 
 export default SyncUserWithConvex;

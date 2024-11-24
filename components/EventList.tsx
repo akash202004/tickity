@@ -61,6 +61,21 @@ function EventList() {
           <p className="text-gray-600 mt-1">Check back later for new events</p>
         </div>
       )}
+
+      {/* Past Events Grid */}
+      {pastEvents.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {pastEvents.map((event) => (
+            <EventCard key={event._id} eventId={event._id} />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg p-12 text-center mb-12">
+          <Ticket className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900">No past events</h3>
+          <p className="text-gray-600 mt-1">Check back later for new events</p>
+        </div>
+      )}
     </div>
   );
 }

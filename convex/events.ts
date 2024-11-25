@@ -28,7 +28,7 @@ export const getEventAvailability = query({
     }
 
     // Count total purchased tickets
-    const purchasedTickets = await ctx.db
+    const purchasedCount = await ctx.db
       .query("tickets")
       .withIndex("by_event", (q) => q.eq("eventId", eventId))
       .collect()
@@ -52,5 +52,15 @@ export const getEventAvailability = query({
       .then(
         (entries) => entries.filter((e) => (e.offerExpiresAt ?? 0) > now).length
       );
+
+    const totalReserved = purchasedCount + activeOffers;
+
+    return {
+      isSoldOut: totalReserved >= event.totalTickets,
+      totalTickets: event.totalTickets,
+      purchasedCount,
+      activeOffers,
+      remainingTickets: event.totalTickets - totalReserved,
+    };
   },
 });

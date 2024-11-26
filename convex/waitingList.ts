@@ -37,5 +37,10 @@ export const getQueuePosition = query({
       )
       .collect()
       .then((entries) => entries.length);
+
+    return {
+      ...entry,
+      position: peopleAhead + 1,
+    };
   },
 });

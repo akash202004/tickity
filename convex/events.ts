@@ -60,7 +60,7 @@ export const getEventAvailability = query({
       totalTickets: event.totalTickets,
       purchasedCount,
       activeOffers,
-      remainingTickets: event.totalTickets - totalReserved,
+      remainingTickets: Math.max(0, event.totalTickets - totalReserved),
     };
   },
 });

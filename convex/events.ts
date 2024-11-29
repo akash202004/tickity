@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { TICKET_STATUS, WAITING_LIST_STATUS } from "./constants";
 
-export const get = query({
+export const getAll = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db

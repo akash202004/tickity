@@ -1,7 +1,8 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { TICKET_STATUS, WAITING_LIST_STATUS } from "./constants";
 
+// get all events
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
@@ -12,6 +13,7 @@ export const getAll = query({
   },
 });
 
+// get events by their id
 export const getById = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, { eventId }) => {
@@ -19,6 +21,7 @@ export const getById = query({
   },
 });
 
+// check for ticket availability like it soldout, total tickets, purchased tickets, active offers, remaining tickets
 export const getEventAvailability = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, { eventId }) => {
@@ -63,4 +66,10 @@ export const getEventAvailability = query({
       remainingTickets: Math.max(0, event.totalTickets - totalReserved),
     };
   },
+});
+
+// join the waiting list for an event
+export const joinWaitingList = mutation({
+  args: { eventId: v.id("events"), userId: v.string() },
+  handler: async (ctx, { eventId, userId }) => {},
 });

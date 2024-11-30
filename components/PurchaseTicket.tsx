@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useEffect, useState } from "react";
 import { Ticket } from "lucide-react";
+import ReleaseTicket from "./ReleaseTicket";
 
 function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
   const { user } = useUser();
@@ -48,6 +49,7 @@ function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
     return () => clearInterval(interval);
   }, [offerExpired, isExpired]);
 
+  // handle stripe checkout
   const handlePurchase = async () => {
     if (!user || !queuePosition || queuePosition.status !== "offered") {
       return null;
@@ -90,9 +92,14 @@ function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
             : "Purchase Your Ticket Now →"}
         </button>
 
-        {/* <div className="mt-4">
-          <ReleaseTicket eventId={eventId} waitingListId={queuePosition._id} />
-        </div> */}
+        <div className="mt-4">
+          {queuePosition && (
+            <ReleaseTicket
+              eventId={eventId}
+              waitingListId={queuePosition._id}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

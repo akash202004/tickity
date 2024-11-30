@@ -56,5 +56,12 @@ export const releaseTicket = mutation({
     if (!entry || entry.status !== WAITING_LIST_STATUS.OFFERED) {
       throw new Error("No valid ticket offer found");
     }
+
+    // Mark the ticket as expired
+    await ctx.db.patch(waitingListId, {
+      status: WAITING_LIST_STATUS.EXPIRED,
+    });
+
+    // Process the offer ticket to next person in line
   },
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import EventCard from "@/components/EventCard";
+import JoinQueue from "@/components/JoinQueue";
 import Spinner from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -116,7 +117,7 @@ function page() {
                 <div className="sticky top-8 space-y-4">
                   <EventCard eventId={params.id as Id<"events">} />
 
-                  {/* {user ? (
+                  {user ? (
                     <JoinQueue
                       eventId={params.id as Id<"events">}
                       userId={user.id}
@@ -127,7 +128,7 @@ function page() {
                         Sign in to buy tickets
                       </Button>
                     </SignInButton>
-                  )} */}
+                  )}
                 </div>
               </div>
             </div>

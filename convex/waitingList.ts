@@ -61,7 +61,7 @@ export const expireOffer = internalMutation({
       status: WAITING_LIST_STATUS.EXPIRED,
     });
 
-    await processQueue(ctx, { eventId });
+    // await processQueue(ctx, { eventId });
   },
 });
 

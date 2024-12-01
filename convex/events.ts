@@ -169,6 +169,23 @@ export const joinWaitingList = mutation({
         internal.waitingList.expireOffer,
         { waitingListId, eventId }
       );
+    } else {
+      // if no ticket available, add to waiting list
+      await ctx.db.insert("waitingList", {
+        eventId,
+        userId,
+        status: WAITING_LIST_STATUS.WAITING,
+      });
     }
+
+    return {
+      success: true,
+      status: available
+        ? WAITING_LIST_STATUS.OFFERED
+        : WAITING_LIST_STATUS.WAITING,
+      message: available
+        ? `Ticket offered - you have ${DURATION.TICKET_OFFER / (60 * 1000)} minutes to purchase`
+        : "Added to waiting list - you will be notified when a ticket is available",
+    };
   },
 });

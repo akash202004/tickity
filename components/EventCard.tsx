@@ -50,7 +50,7 @@ function EventCard({ eventId }: { eventId: Id<"events"> }) {
         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
           <div className="flex items-center">
             <Ticket className="w-5 h-5 text-gray-400 mr-2" />
-            <span className="text-gray-600">Event is sold out!</span>
+            <span className="text-gray-600">Event is sold out</span>
           </div>
         </div>
       );
@@ -62,12 +62,12 @@ function EventCard({ eventId }: { eventId: Id<"events"> }) {
           <div className="flex items-center">
             <CircleArrowRight className="w-5 h-5 text-amber-500 mr-2" />
             <span className="text-amber-700 font-medium">
-              You&apos;re next in line! (Queue Position:{" "}
+              You&apos;re next in line! (Queue position:{" "}
               {queuePosition.position})
             </span>
           </div>
           <div className="flex items-center">
-            <LoaderCircle className="w-4 h-4 animate-spin text-amber-500 mr-1" />
+            <LoaderCircle className="w-4 h-4 mr-1 animate-spin text-amber-500" />
             <span className="text-amber-600 text-sm">Waiting for ticket</span>
           </div>
         </div>
@@ -187,20 +187,20 @@ function EventCard({ eventId }: { eventId: Id<"events"> }) {
               </span>
             )}
           </div>
-        </div>
 
-        {/* Price Tag */}
-        <div className="flex flex-col items-end gap-2 ml-4">
-          <span
-            className={`px-4 py-1.5 font-semibold rounded-full ${isPastEvent ? "bg-gray-50 text-gray-500" : "bg-green-50 text-green-700"}`}
-          >
-            ₹{event.price.toFixed(2)}
-          </span>
-          {availability.purchasedCount >= availability.totalTickets && (
-            <span className="px-4 py-1.5 bg-red-50 text-red-700 font-semibold rounded-full text-sm">
-              Sold Out
+          {/* Price Tag */}
+          <div className="flex flex-col items-end gap-2 ml-4">
+            <span
+              className={`px-4 py-1.5 font-semibold rounded-full ${isPastEvent ? "bg-gray-50 text-gray-500" : "bg-green-50 text-green-700"}`}
+            >
+              ₹{event.price.toFixed(2)}
             </span>
-          )}
+            {availability.purchasedCount >= availability.totalTickets && (
+              <span className="px-4 py-1.5 bg-red-50 text-red-700 font-semibold rounded-full text-sm">
+                Sold Out
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Event Details */}

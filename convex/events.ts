@@ -31,7 +31,6 @@ export const getEventAvailability = query({
       throw new Error("Event not found");
     }
 
-    // Count total purchased tickets
     const purchasedCount = await ctx.db
       .query("tickets")
       .withIndex("by_event", (q) => q.eq("eventId", eventId))
@@ -45,7 +44,6 @@ export const getEventAvailability = query({
           ).length
       );
 
-    // Count current valid tickets
     const now = Date.now();
     const activeOffers = await ctx.db
       .query("waitingList")
@@ -130,8 +128,6 @@ export const joinWaitingList = mutation({
     //   );
     // }
 
-    // check if user already has an active entry in waiting list for this event
-    // Active ,eams any status except EXPIRED
     const existingEntry = await ctx.db
       .query("waitingList")
       .withIndex("by_user_event", (q) =>
@@ -144,18 +140,15 @@ export const joinWaitingList = mutation({
       throw new Error("You're already on the waiting list for this event");
     }
 
-    // Verify the event exists
     const event = await ctx.db.get(eventId);
     if (!event) {
       throw new Error("Event not found");
     }
 
-    // check if there are any available tickets right now
     const { available } = await getEventAvailability(ctx, { eventId });
     const now = Date.now();
 
     if (available) {
-      // Create a new entry in the waiting list
       const waitingListId = await ctx.db.insert("waitingList", {
         eventId,
         userId,
@@ -163,14 +156,12 @@ export const joinWaitingList = mutation({
         offerExpiresAt: now + DURATION.TICKET_OFFER,
       });
 
-      // schedule a job to expire the ticket offer after the offer duration
       await ctx.scheduler.runAfter(
         DURATION.TICKET_OFFER,
         internal.waitingList.expireOffer,
         { waitingListId, eventId }
       );
     } else {
-      // if no ticket available, add to waiting list
       await ctx.db.insert("waitingList", {
         eventId,
         userId,

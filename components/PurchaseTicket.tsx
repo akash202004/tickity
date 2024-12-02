@@ -49,7 +49,6 @@ function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
     return () => clearInterval(interval);
   }, [offerExpired, isExpired]);
 
-  // handle stripe checkout
   const handlePurchase = async () => {
     if (!user || !queuePosition || queuePosition.status !== "offered") {
       return null;

@@ -69,53 +69,6 @@ export const getEventAvailability = query({
   },
 });
 
-// // helper function to check ticket availability for an event
-// export const checkTicketAvailability = query({
-//   args: { eventId: v.id("events") },
-//   handler: async (ctx, { eventId }) => {
-//     const event = await ctx.db.get(eventId);
-//     if (!event) {
-//       throw new Error("Event not found");
-//     }
-
-//     // Count total purchased tickets
-//     const purchasedCount = await ctx.db
-//       .query("tickets")
-//       .withIndex("by_event", (q) => q.eq("eventId", eventId))
-//       .collect()
-//       .then(
-//         (ticket) =>
-//           ticket.filter(
-//             (t) =>
-//               t.status === TICKET_STATUS.WALID ||
-//               t.status === TICKET_STATUS.USED
-//           ).length
-//       );
-
-//     // Count current valid tickets
-//     const now = Date.now();
-//     const activeOffers = await ctx.db
-//       .query("waitingList")
-//       .withIndex("by_event_status", (q) =>
-//         q.eq("eventId", eventId).eq("status", WAITING_LIST_STATUS.OFFERED)
-//       )
-//       .collect()
-//       .then(
-//         (entries) => entries.filter((e) => (e.offerExpiresAt ?? 0) > now).length
-//       );
-
-//     const availableSpots = event.totalTickets - (purchasedCount + activeOffers);
-
-//     return {
-//       available: availableSpots > 0,
-//       availableSpots,
-//       totalTickets: event.totalTickets,
-//       purchasedCount,
-//       activeOffers,
-//     };
-//   },
-// });
-
 // join the waiting list for an event
 export const joinWaitingList = mutation({
   args: { eventId: v.id("events"), userId: v.string() },

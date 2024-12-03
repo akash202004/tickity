@@ -145,7 +145,6 @@ function EventCard({ eventId }: { eventId: Id<"events"> }) {
         </div>
       );
     }
-
     return null;
   };
 
@@ -224,7 +223,7 @@ function EventCard({ eventId }: { eventId: Id<"events"> }) {
               {availability.totalTickets - availability.purchasedCount} /{" "}
               {availability.totalTickets} available
               {!isPastEvent && availability.activeOffers > 0 && (
-                <span className="text-amber-600 ml-2 text-sm">
+                <span className="text-amber-600 text-sm ml-2">
                   ({availability.activeOffers}{" "}
                   {availability.activeOffers === 1 ? "person" : "people"} trying
                   to buy)

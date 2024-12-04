@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
-import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
 import { ConvexHttpClient } from "convex/browser";
 
 const convexApiKey = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -20,6 +20,25 @@ export async function createStripeConnectCustomer() {
 
   const existingStripeConnectId = await convex.query(
     api.users.getUserStripeConnectId,
-    {userId}    
-    )
+    { userId }
+  );
+
+  if (existingStripeConnectId) {
+    return { account: existingStripeConnectId };
+  }
+
+  const account = await stripe.accounts.create({
+    type: "express",
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
+  });
+
+  await convex.mutation(api.users.updateOrCreateUserStripeConnectId, {
+    userId,
+    stripeConnectId: account.id,
+  });
+
+  return { account: account.id };
 }

@@ -1,6 +1,18 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+export const getUserStripeConnectId = query({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .filter((q) => q.neq(q.field("stripeConnectId"), undefined))
+      .first();
+
+    return user?.stripeConnectId;
+  },
+});
 
 export const updateUser = mutation({
   args: {

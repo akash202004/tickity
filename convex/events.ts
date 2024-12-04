@@ -105,7 +105,7 @@ export const joinWaitingList = mutation({
       const waitingListId = await ctx.db.insert("waitingList", {
         eventId,
         userId,
-        status: WAITING_LIST_STATUS.WAITING,
+        status: WAITING_LIST_STATUS.OFFERED,
         offerExpiresAt: now + DURATION.TICKET_OFFER,
       });
 

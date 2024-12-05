@@ -17,5 +17,7 @@ export async function getStripeConnectAccount() {
     userId,
   });
 
-  return
+  return {
+    stripeConnectId: stripeConnectId || null,
+  };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
@@ -11,7 +10,6 @@ import ReleaseTicket from "./ReleaseTicket";
 
 function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
   const { user } = useUser();
-  const router = useRouter();
   const queuePosition = useQuery(api.waitingList.getQueuePosition, {
     eventId,
     userId: user?.id ?? "",

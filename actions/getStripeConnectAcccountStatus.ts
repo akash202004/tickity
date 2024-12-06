@@ -42,7 +42,7 @@ export async function getStripeConnectAcccountStatus(
       payoutsEnabled: account.payouts_enabled,
     };
   } catch (error) {
-    console.log("Error fetching stripe account status", error);
+    console.error("Error fetching stripe account status", error);
     throw new Error("Failed to fetch stripe account status");
   }
 }

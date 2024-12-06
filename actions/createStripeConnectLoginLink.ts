@@ -9,7 +9,7 @@ export async function createStripeConnectLoginLink(stripeAccountId: string) {
     const loginLink = await stripe.accounts.createLoginLink(stripeAccountId);
     return loginLink.url;
   } catch (error) {
-    console.log("Error craeting Stripe Connect login link", error);
+    console.error("Error craeting Stripe Connect login link", error);
     throw new Error("Error creating Stripe Connect login link");
   }
 }

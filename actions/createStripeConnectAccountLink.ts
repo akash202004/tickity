@@ -14,6 +14,8 @@ export async function createStripeConnectAccountLink(account: string) {
       return_url: `${origin}/connect/return/${account}`,
       type: "account_onboarding",
     });
+
+    return { url: accountLink.url };
   } catch (error) {
     console.error(
       "An error occured when calling the stripe API to craete an account link: ",

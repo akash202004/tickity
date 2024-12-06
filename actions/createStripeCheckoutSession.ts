@@ -29,4 +29,15 @@ export async function createStripeCheckoutSession({
   });
   if (!queuePosition || queuePosition.status !== "offered")
     throw new Error("No valid tikcet offer found");
+
+  const stripeConnectId = await convex.query(api.users.getUserStripeConnectId, {
+    userId: event.userId,
+  });
+  if (!stripeConnectId) {
+    throw new Error("Stripe Connect ID not found for owner of the event!");
+  }
+
+  if (!queuePosition.offerExpiresAt) {
+    throw new Error("Ticket offer has no expiration date");
+  }
 }

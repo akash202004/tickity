@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { DURATION } from "@/convex/constants";
 import baseUrl from "@/lib/baseUrl";
+import { getConvexClient } from "@/lib/convex";
 import { stripe } from "@/lib/stripe";
 import { auth } from "@clerk/nextjs/server";
 

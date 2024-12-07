@@ -3,14 +3,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { stripe } from "@/lib/stripe";
-import { ConvexHttpClient } from "convex/browser";
+import { getConvexClient } from "@/lib/convex";
 
-const convexApiKey = process.env.NEXT_PUBLIC_CONVEX_URL;
-if (!convexApiKey) {
-  throw new Error("No NEXT_PUBLIC_CONVEX_URL found");
-}
-
-const convex = new ConvexHttpClient(convexApiKey);
+const convex = getConvexClient();
 
 export async function createStripeConnectCustomer() {
   const { userId } = await auth();

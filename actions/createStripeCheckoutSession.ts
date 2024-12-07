@@ -3,6 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { DURATION } from "@/convex/constants";
+import baseUrl from "@/lib/baseUrl";
 import { stripe } from "@/lib/stripe";
 import { auth } from "@clerk/nextjs/server";
 
@@ -51,7 +52,7 @@ export async function createStripeCheckoutSession({
 
   const session = await stripe.checkout.sessions.create(
     {
-      payment_method_types: ["card", "paypal"],
+      payment_method_types: ["card", "paypal"], // note : [upi and netbanking try to implement later]
       line_items: [
         {
           price_data: {

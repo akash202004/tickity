@@ -45,7 +45,7 @@ export async function createStripeCheckoutSession({
     throw new Error("Ticket offer has no expiration date");
   }
 
-  const metadata: stripeCheckoutMetaData = {
+  const metadata: StripeCheckoutMetaData = {
     eventId,
     userId,
     waitingListId: queuePosition._id,

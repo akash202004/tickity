@@ -14,7 +14,7 @@ export type AccountStatus = {
   payoutsEnabled: boolean;
 };
 
-export async function getStripeConnectAcccountStatus(
+export async function getStripeConnectAccountStatus(
   stripeAccountId: string
 ): Promise<AccountStatus> {
   if (!stripeAccountId) {

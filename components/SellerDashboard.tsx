@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import Spinner from "./Spinner";
 import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
+import { createStripeConnectCustomer } from "@/actions/createStripeConnectCustomer";
 
 function SellerDashboard() {
   const [accountCreatePending, setAccountCreatePending] = useState(false);
@@ -67,7 +68,6 @@ function SellerDashboard() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="bg-whiet rounded-lg shadow-lg overflow-hidden">
-
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-8 text-white">
           <h2 className="text-2xl font-bold">Seller Dashboard</h2>
           <p className="text-blue-100 mt-2">
@@ -107,6 +107,45 @@ function SellerDashboard() {
           </>
         )}
 
+        <div className="p-6">
+          {!stripeConnectId && !accountCreatePending && (
+            <div className="text-center py-8">
+              <h3 className="text-xl font-semibold mb-4">
+                Start Accepting Payments
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Create your seller account to start receiving payments securely
+                through Stripe
+              </p>
+              <button
+                onClick={async () => {
+                  setAccountCreatePending(true);
+                  setError(false);
+                  try {
+                    await createStripeConnectCustomer();
+                    setAccountCreatePending(false);
+                  } catch (error) {
+                    console.error(
+                      "Error creating Stripe Connect customer:",
+                      error
+                    );
+                    setError(true);
+                    setAccountCreatePending(false);
+                  }
+                }}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Create Seller Account
+              </button>
+            </div>
+          )}
+
+          {stripeConnectId && accountStatus && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md: "></div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

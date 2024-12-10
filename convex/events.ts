@@ -22,6 +22,51 @@ export const getById = query({
   },
 });
 
+// create a new event
+export const craete = mutation({
+  args: {
+    name: v.string(),
+    description: v.string(),
+    location: v.string(),
+    eventDate: v.number(),
+    price: v.number(),
+    totalTickets: v.number(),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const eventId = await ctx.db.insert("events", {
+      name: args.name,
+      description: args.description,
+      location: args.location,
+      eventDate: args.eventDate,
+      price: args.price,
+      totalTickets: args.totalTickets,
+      userId: args.userId,
+    });
+
+    return eventId;
+  },
+});
+
+// update an event
+export const updateEvent = mutation({
+  args: {
+    eventId: v.id("events"),
+    name: v.string(),
+    description: v.string(),
+    location: v.string(),
+    eventDate: v.number(),
+    price: v.number(),
+    totalTickets: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const {eventId, ...updates} = args;
+
+    const event = await ctx.db.get(eventId);
+    if(!event) throw new Error
+  },
+});
+
 // check for ticket availability like it soldout, total tickets, purchased tickets, active offers, remaining tickets
 export const getEventAvailability = query({
   args: { eventId: v.id("events") },

@@ -60,10 +60,27 @@ export const updateEvent = mutation({
     totalTickets: v.number(),
   },
   handler: async (ctx, args) => {
-    const {eventId, ...updates} = args;
+    const { eventId, ...updates } = args;
 
     const event = await ctx.db.get(eventId);
-    if(!event) throw new Error
+    if (!event) throw new Error("Event not found");
+
+    const soldTickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_event", (q) => q.eq("eventId", eventId))
+      .filter((q) =>
+        q.or(q.eq(q.field("status"), "valid"), q.eq(q.field("status"), "used"))
+      )
+      .collect();
+
+    if (updates.totalTickets < soldTickets.length) {
+      throw new ConvexError(
+        `Cannot reduce total tickets below ${soldTickets.length} (number of sold tickets already sold)`
+      );
+    }
+
+    await ctx.db.patch(eventId, updates);
+    return eventId;
   },
 });
 

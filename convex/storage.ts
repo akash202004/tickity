@@ -23,3 +23,10 @@ export const updateEventImage = mutation({
     });
   },
 });
+
+export const deleteImage = mutation({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, { storageId }) => {
+    await ctx.storage.delete(storageId);
+  },
+});

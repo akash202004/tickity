@@ -7,7 +7,7 @@ import { useStorageUrl } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -50,6 +50,16 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
   const [isPending, startTrasnsition] = useTransition();
   const { toast } = useToast();
   const currentImageUrl = useStorageUrl(intialData?.imageStorageId);
+
+  // image upload
+  const imageInput = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
+  const updateEventImage = useMutation(api.storage.updateEventImage);
+  const deleteImage = useMutation(api.storage.deleteImage);
+
+  const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
 
   return <div>EventForm</div>;
 }

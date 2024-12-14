@@ -5,9 +5,11 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useToast } from "@/hooks/use-toast";
 import { useStorageUrl } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -29,7 +31,7 @@ type FormData = z.infer<typeof formSchema>;
 interface InitialEventData {
   _id: Id<"events">;
   name: string;
-  descripton: string;
+  description: string;
   location: string;
   eventDate: number;
   price: number;
@@ -58,8 +60,21 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
   const updateEventImage = useMutation(api.storage.updateEventImage);
   const deleteImage = useMutation(api.storage.deleteImage);
-
   const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: intialData?.name ?? "",
+      description: intialData?.description ?? "",
+      location: intialData?.location ?? "",
+      eventData: intialData ? new Date(intialData.eventDate) : new Date(),
+      price: intialData?.price ?? 0,
+      totalTickets: intialData?.totalTickets ?? 1,
+    },
+  });
+
+  async function onSubmit(values: FormData) {}
 
   return <div>EventForm</div>;
 }

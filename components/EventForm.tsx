@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -75,6 +75,34 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
   });
 
   async function onSubmit(values: FormData) {}
+
+  async function handleImageUpload(file: File): Promise<string | null> {
+    try {
+      const postUrl = await generateUploadUrl();
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { strorageId } = await result.json();
+      return strorageId;
+    } catch (error) {
+      console.error("Failed to upload image", error);
+      return null;
+    }
+  }
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return <div>EventForm</div>;
 }

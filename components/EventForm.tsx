@@ -48,7 +48,7 @@ interface InitialEventData {
   eventDate: number;
   price: number;
   totalTickets: number;
-  imageStorageId: Id<"_storage">;
+  imageStorageId?: Id<"_storage">;
 }
 
 interface EventFormProps {
@@ -117,8 +117,42 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
           }
 
           router.push(`/events/${eventId}`);
+        } else {
+          if (!intialData) {
+            throw new Error("Intial event data is required for updates");
+          }
+
+          await updateEvent({
+            eventId: intialData._id,
+            ...values,
+            eventDate: values.eventDate.getTime(),
+          });
+
+          if (imageStorageId || removeCurrentImage) {
+            await updateEventImage({
+              eventId: intialData._id,
+              storageId: imageStorageId
+                ? (imageStorageId as Id<"_storage">)
+                : null,
+            });
+          }
+
+          toast({
+            title: "Event updated",
+            description: "Your event has been successfully updated.",
+          });
+
+          router.push(`/events/${intialData._id}`);
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to handle event", error);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong",
+          description:
+            "There was a problem with your request. Please try again.",
+        });
+      }
     });
   }
 
@@ -130,8 +164,8 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
         headers: { "Content-Type": file.type },
         body: file,
       });
-      const { strorageId } = await result.json();
-      return strorageId;
+      const { storageId } = await result.json();
+      return storageId;
     } catch (error) {
       console.error("Failed to upload image", error);
       return null;
@@ -232,7 +266,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
                 <FormControl>
                   <div className="relative">
                     <span className="absolute left-2 top-1/2 -translate-y-1/2">
-                      $
+                      £
                     </span>
                     <Input
                       type="number"
@@ -241,6 +275,24 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
                       className="pl-6"
                     />
                   </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="totalTickets"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Total Tickets Available</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

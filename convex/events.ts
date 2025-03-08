@@ -148,7 +148,7 @@ export const joinWaitingList = mutation({
       .withIndex("by_user_event", (q) =>
         q.eq("userId", userId).eq("eventId", eventId)
       )
-      .filter((q) => q.neq("status", WAITING_LIST_STATUS.EXPIRED))
+      .filter((q) => q.eq("status", WAITING_LIST_STATUS.OFFERED || WAITING_LIST_STATUS.WAITING))
       .first();
 
     if (existingEntry) {

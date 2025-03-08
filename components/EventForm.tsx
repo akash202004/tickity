@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -116,7 +116,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
             });
           }
 
-          router.push(`/events/${eventId}`);
+          router.push(`/event/${eventId}`);
         } else {
           if (!intialData) {
             throw new Error("Intial event data is required for updates");
@@ -142,7 +142,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
             description: "Your event has been successfully updated.",
           });
 
-          router.push(`/events/${intialData._id}`);
+          router.push(`/event/${intialData._id}`);
         }
       } catch (error) {
         console.error("Failed to handle event", error);

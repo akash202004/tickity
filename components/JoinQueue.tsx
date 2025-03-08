@@ -33,6 +33,7 @@ function JoinQueue({
   const handleJoinQueue = async () => {
     try {
       const result = await joinWaitingList({ eventId, userId });
+      console.log(result);
       if (result.success) {
         console.log("Successfully joined wating list");
         toast({

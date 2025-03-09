@@ -53,7 +53,7 @@ export async function createStripeCheckoutSession({
 
   const session = await stripe.checkout.sessions.create(
     {
-      payment_method_types: ["card", "paypal"], // note : [upi and netbanking try to implement later]
+      payment_method_types: ["card"], // note : [upi and netbanking try to implement later]
       line_items: [
         {
           price_data: {

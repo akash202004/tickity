@@ -2,7 +2,7 @@ import { Doc } from "./_generated/dataModel";
 
 // Time constants in milliSeconds
 export const DURATION = {
-  TICKET_OFFER: 15 * 60 * 1000, // Minimum stripe allow to payment expiry
+  TICKET_OFFER: 30 * 60 * 1000, // Minimum stripe allow to payment expiry
 } as const;
 
 // status type for better type safety

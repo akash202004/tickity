@@ -148,7 +148,12 @@ export const joinWaitingList = mutation({
       .withIndex("by_user_event", (q) =>
         q.eq("userId", userId).eq("eventId", eventId)
       )
-      .filter((q) => q.eq("status", WAITING_LIST_STATUS.OFFERED || WAITING_LIST_STATUS.WAITING))
+      .filter((q) =>
+        q.eq(
+          "status",
+          WAITING_LIST_STATUS.OFFERED || WAITING_LIST_STATUS.WAITING
+        )
+      )
       .first();
 
     if (existingEntry) {
@@ -194,4 +199,18 @@ export const joinWaitingList = mutation({
         : "Added to waiting list - you will be notified when a ticket is available",
     };
   },
+});
+
+// Purchase ticket
+export const purchaseTicket = mutation({
+  args: {
+    eventId: v.id("events"),
+    userId: v.string(),
+    waitingListId: v.id("waitingList"),
+    paymentInfo: v.object({
+      paymentIntentId: v.string(),
+      amount: v.number(),
+    }),
+  },
+  handler: async (ctx, { eventId, userId, waitingListId, paymentInfo }) => {},
 });

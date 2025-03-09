@@ -51,7 +51,7 @@ function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
   }, [offerExpired, isExpired]);
 
   const handlePurchase = async () => {
-    if (!user || !queuePosition || queuePosition.status !== "offered") {
+    if (!user) {
       return;
     }
 
@@ -65,10 +65,15 @@ function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
         router.push(sessionUrl);
       }
     } catch (error) {
+      console.error("Error creating checkout session:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!user || !queuePosition || queuePosition.status !== "offered") {
+    return null;
+  }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg border border-amber-200">

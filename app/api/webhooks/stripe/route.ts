@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     console.error("❌ Stripe signature missing");
     return new Response("Stripe signature missing", { status: 400 });
   }
+  console.log(process.env.STRIPE_WEBHOOK_SECRET);
 
   let event: Stripe.Event;
   try {

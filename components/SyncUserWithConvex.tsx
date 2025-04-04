@@ -3,7 +3,7 @@
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 function SyncUserWithConvex() {
   const { user } = useUser();

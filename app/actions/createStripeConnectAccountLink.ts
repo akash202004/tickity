@@ -18,12 +18,12 @@ export async function createStripeConnectAccountLink(account: string) {
     return { url: accountLink.url };
   } catch (error) {
     console.error(
-      "An error occured when calling the stripe API to craete an account link: ",
+      "An error occurred when calling the Stripe API to create an account link:",
       error
     );
     if (error instanceof Error) {
       throw new Error(error.message);
     }
-    throw new Error("An unknown error occured");
+    throw new Error("An unknown error occurred");
   }
 }

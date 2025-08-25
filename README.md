@@ -1,6 +1,19 @@
 # Ticketr - Real-time Event Ticketing Platform
 
-A modern, real-time event ticketing platform built with Next.js 14, Convex, Clerk, and Stripe Connect. Features a sophisticated queue system, real-time updates, and secure payment processing.
+Ticketr is a modern, real-time event ticketing platform built with Next.js, Convex, Clerk, and Stripe Connect. It features a sophisticated queue system, real-time updates, secure payment processing, and a beautiful, responsive UI.
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Installation](#installation)
+- [Setup Guides](#setup-guides)
+- [Architecture](#architecture)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
@@ -48,21 +61,28 @@ A modern, real-time event ticketing platform built with Next.js 14, Convex, Cler
 - 🔄 Loading states and animations
 - 💫 Micro-interactions for better engagement
 
+## Tech Stack
+
+- **Frontend:** Next.js, React, Tailwind CSS, shadcn/ui
+- **Backend:** Convex
+- **Authentication:** Clerk
+- **Payments:** Stripe Connect
+
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm/yarn
+- npm or yarn
 - Stripe Account
 - Clerk Account
 - Convex Account
 
-### Environment Variables
+## Environment Variables
 
-Create a `.env.local` file with:
+Create a `.env.local` file in the root directory and add the following:
 
-```bash
+```env
 NEXT_PUBLIC_CONVEX_URL=your_convex_url
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
 CLERK_SECRET_KEY=your_clerk_secret
@@ -71,11 +91,12 @@ STRIPE_WEBHOOK_SECRET=your_webhook_secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### Installation
+## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/sonnysangha/ticket-marketplace-saas-nextjs15-convex-clerk-stripe-connect
+git clone <your-repo-url>
+cd ticketr
 
 # Install dependencies
 npm install
@@ -87,104 +108,42 @@ npm run dev
 npx convex dev
 ```
 
-### Setting up Clerk
+## Setup Guides
 
-1. [Create a Clerk application by Clicking here!](https://go.clerk.com)
-2. Configure authentication providers
-3. Set up redirect URLs
-4. Add environment variables
+### Clerk
 
-### Setting up Convex
+1. [Create a Clerk application](https://clerk.com/)
+2. Configure authentication providers and redirect URLs
+3. Add your Clerk keys to `.env.local`
 
-1. [Create a Convex account by Clicking here!](https://convex.dev)
+### Convex
+
+1. [Create a Convex account](https://convex.dev/)
 2. Create a new project
-3. Install the Convex CLI:
-   ```bash
-   npm install convex
-   ```
-4. Initialize Convex in your project:
-   ```bash
-   npx convex init
-   ```
-5. Copy your deployment URL from the Convex dashboard and add it to your `.env.local`:
-   ```bash
-   NEXT_PUBLIC_CONVEX_URL=your_deployment_url
-   ```
-6. Start the Convex development server:
-   ```bash
-   npx convex dev
-   ```
+3. Install Convex CLI: `npm install convex`
+4. Initialize Convex: `npx convex init`
+5. Add your deployment URL to `.env.local`
+6. Start Convex dev server: `npx convex dev`
 
-Note: Keep the Convex development server running while working on your project. It will sync your backend functions and database schema automatically.
-
-### Setting up Stripe
+### Stripe
 
 1. Create a Stripe account
 2. Enable Stripe Connect
 3. Set up webhook endpoints
-4. Configure payment settings
+4. Add your Stripe keys to `.env.local`
 
-### Setting up Stripe Webhooks for Local Development
+#### Stripe Webhooks for Local Development
 
-1. Install the Stripe CLI:
+1. Install Stripe CLI ([docs](https://stripe.com/docs/stripe-cli))
+2. Login: `stripe login`
+3. Forward webhooks: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+4. Add the webhook secret to `.env.local`
 
-   ```bash
-   # macOS
-   brew install stripe/stripe-cli/stripe
+### UI Components
 
-   # Windows (using scoop)
-   scoop install stripe
-
-   # Linux
-   curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
-   echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee -a /etc/apt/sources.list.d/stripe.list
-   sudo apt update
-   sudo apt install stripe
-   ```
-
-2. Login to Stripe CLI:
-
-   ```bash
-   stripe login
-   ```
-
-3. Start webhook forwarding:
-
-   ```bash
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
-   ```
-
-4. Copy the webhook signing secret that is displayed after running the listen command and add it to your `.env.local`:
-
-   ```bash
-   STRIPE_WEBHOOK_SECRET=whsec_xxxxx
-   ```
-
-5. Keep the webhook forwarding running while testing payments locally. The CLI will forward all webhook events to your local endpoint.
-
-Note: Make sure your webhook endpoint (`/api/webhooks/stripe`) is properly configured to handle incoming webhook events.
-
-### Setting up UI Components
-
-1. Install shadcn/ui CLI:
-
-   ```bash
-   npx shadcn-ui@latest init
-   ```
-
-2. Install required components:
-
-   ```bash
-   npx shadcn-ui@latest add toast
-   npx shadcn-ui@latest add button
-   npx shadcn-ui@latest add card
-   npx shadcn-ui@latest add dialog
-   ```
-
-3. Configure toast notifications in your layout:
-   ```bash
-   npx shadcn-ui@latest add toaster
-   ```
+1. Install shadcn/ui CLI: `npx shadcn-ui@latest init`
+2. Add components: `npx shadcn-ui@latest add toast button card dialog`
+3. Add toaster: `npx shadcn-ui@latest add toaster`
 
 ## Architecture
 
@@ -218,7 +177,7 @@ Note: Make sure your webhook endpoint (`/api/webhooks/stripe`) is properly confi
 2. Join queue for desired event
 3. Receive ticket offer
 4. Complete purchase within time limit
-5. Access digital ticket with QR cod
+5. Access digital ticket with QR code
 
 ### Handling Refunds and Cancellations
 
@@ -228,23 +187,26 @@ Note: Make sure your webhook endpoint (`/api/webhooks/stripe`) is properly confi
 
 ### User Experience
 
-1. Real-time Feedback
+#### Real-time Feedback
 
-   - Instant purchase confirmations
-   - Queue position updates
-   - Error notifications
-   - Success page
-   - Ticket status
+- Instant purchase confirmations
+- Queue position updates
+- Error notifications
+- Success page
+- Ticket status
 
-2. Interactive Elements
-   - Animated buttons and cards
-   - Loading states
-   - Progress indicators
-   - Skeleton loaders
-   - Smooth transitions
+#### Interactive Elements
 
-## Feedback form
+- Animated buttons and cards
+- Loading states
+- Progress indicators
+- Skeleton loaders
+- Smooth transitions
 
-[Feedback-Form](https://forms.gle/4LPdYVWaQYvX8EGz9)
+## Contributing
 
-[E-mail](akashlahapubg@gmail.com)
+Contributions are welcome! Please open issues or submit pull requests for improvements and bug fixes.
+
+## License
+
+This project is licensed under the MIT License.

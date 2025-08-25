@@ -3,10 +3,10 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
+import { useState } from "react";
 import { XCircle } from "lucide-react";
-import React, { useState } from "react";
 
-function ReleaseTicket({
+export default function ReleaseTicket({
   eventId,
   waitingListId,
 }: {
@@ -17,13 +17,16 @@ function ReleaseTicket({
   const releaseTicket = useMutation(api.waitingList.releaseTicket);
 
   const handleRelease = async () => {
-    if (!confirm("Are you sure you want to release this ticket offer?")) return;
+    if (!confirm("Are you sure you want to release your ticket offer?")) return;
 
     try {
       setIsReleasing(true);
-      await releaseTicket({ eventId, waitingListId });
+      await releaseTicket({
+        eventId,
+        waitingListId,
+      });
     } catch (error) {
-      console.log("Error releasing ticket", error);
+      console.error("Error releasing ticket:", error);
     } finally {
       setIsReleasing(false);
     }
@@ -40,5 +43,3 @@ function ReleaseTicket({
     </button>
   );
 }
-
-export default ReleaseTicket;

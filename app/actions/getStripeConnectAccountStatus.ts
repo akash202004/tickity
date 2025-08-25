@@ -18,7 +18,7 @@ export async function getStripeConnectAccountStatus(
   stripeAccountId: string
 ): Promise<AccountStatus> {
   if (!stripeAccountId) {
-    throw new Error("No Stripe account ID is provided!");
+    throw new Error("No Stripe account ID provided");
   }
 
   try {
@@ -42,7 +42,7 @@ export async function getStripeConnectAccountStatus(
       payoutsEnabled: account.payouts_enabled,
     };
   } catch (error) {
-    console.error("Error fetching stripe account status", error);
-    throw new Error("Failed to fetch stripe account status");
+    console.error("Error fetching Stripe Connect account status:", error);
+    throw new Error("Failed to fetch Stripe Connect account status");
   }
 }

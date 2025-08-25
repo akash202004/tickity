@@ -1,11 +1,11 @@
 import { Doc } from "./_generated/dataModel";
 
-// Time constants in milliSeconds
-export const DURATION = {
-  TICKET_OFFER: 30 * 60 * 1000, // Minimum stripe allow to payment expiry
+// Time constants in milliseconds
+export const DURATIONS = {
+  TICKET_OFFER: 30 * 60 * 1000, // 30 minutes (Minimum Stripe allows for checkout expiry)
 } as const;
 
-// status type for better type safety
+// Status types for better type safety
 export const WAITING_LIST_STATUS: Record<string, Doc<"waitingList">["status"]> =
   {
     WAITING: "waiting",

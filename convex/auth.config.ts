@@ -1,8 +1,8 @@
 export default {
-    providers: [
-      {
-        domain: "https://current-drum-13.clerk.accounts.dev",
-        applicationID: "convex",
-      },
-    ]
-  };
+  providers: [
+    {
+      domain: "https://fresh-monster-41.clerk.accounts.dev/",
+      applicationID: "convex",
+    },
+  ],
+};

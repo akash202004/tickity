@@ -5,7 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { useEffect } from "react";
 
-function SyncUserWithConvex() {
+export default function SyncUserWithConvex() {
   const { user } = useUser();
   const updateUser = useMutation(api.users.updateUser);
 
@@ -17,10 +17,10 @@ function SyncUserWithConvex() {
         await updateUser({
           userId: user.id,
           name: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-          email: user.emailAddresses[0].emailAddress ?? "",
+          email: user.emailAddresses[0]?.emailAddress ?? "",
         });
       } catch (error) {
-        console.log("Error syncing user: ", error);
+        console.error("Error syncing user:", error);
       }
     };
 
@@ -29,5 +29,3 @@ function SyncUserWithConvex() {
 
   return null;
 }
-
-export default SyncUserWithConvex;

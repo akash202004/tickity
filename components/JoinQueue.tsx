@@ -1,15 +1,15 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "convex/react";
-import { ConvexError } from "convex/values";
-import Spinner from "./Spinner";
+import { Id } from "@/convex/_generated/dataModel";
 import { WAITING_LIST_STATUS } from "@/convex/constants";
+import Spinner from "./Spinner";
 import { Clock, OctagonXIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ConvexError } from "convex/values";
 
-function JoinQueue({
+export default function JoinQueue({
   eventId,
   userId,
 }: {
@@ -28,22 +28,19 @@ function JoinQueue({
   });
   const availability = useQuery(api.events.getEventAvailability, { eventId });
   const event = useQuery(api.events.getById, { eventId });
+
   const isEventOwner = userId === event?.userId;
 
   const handleJoinQueue = async () => {
     try {
       const result = await joinWaitingList({ eventId, userId });
       if (result.success) {
-        console.log("Successfully joined wating list");
-        toast({
-          title: "Success!",
-          description: "You have been added to the waiting list.",
-        });
+        console.log("Successfully joined waiting list");
       }
     } catch (error) {
       if (
         error instanceof ConvexError &&
-        error.message.includes("joined the waiting list too mant times")
+        error.message.includes("joined the waiting list too many times")
       ) {
         toast({
           variant: "destructive",
@@ -52,11 +49,11 @@ function JoinQueue({
           duration: 5000,
         });
       } else {
-        console.log("Error joining waiting list", error);
+        console.error("Error joining waiting list:", error);
         toast({
           variant: "destructive",
-          title: "Uh oh! Something went wrong",
-          description: "Failed to join waiting list. Please try again later.",
+          title: "Uh oh! Something went wrong.",
+          description: "Failed to join queue. Please try again later.",
         });
       }
     }
@@ -66,26 +63,11 @@ function JoinQueue({
     return <Spinner />;
   }
 
-  if (userTicket) return null;
+  if (userTicket) {
+    return null;
+  }
 
   const isPastEvent = event.eventDate < Date.now();
-  const EventOwnerMessage = () => {
-    return (
-      <div className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg">
-        <OctagonXIcon className="w-5 h-5" />
-        <span>You cannot buy a ticket for your own event</span>
-      </div>
-    );
-  };
-
-  const PastEventMessage = () => {
-    return (
-      <div className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 text-gray-500 rounded-lg">
-        <Clock className="w-5 h-5" />
-        <span>Event has ended</span>
-      </div>
-    );
-  };
 
   return (
     <div>
@@ -96,13 +78,19 @@ function JoinQueue({
           queuePosition.offerExpiresAt <= Date.now())) && (
         <>
           {isEventOwner ? (
-            <EventOwnerMessage />
+            <div className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg">
+              <OctagonXIcon className="w-5 h-5" />
+              <span>You cannot buy a ticket for your own event</span>
+            </div>
           ) : isPastEvent ? (
-            <PastEventMessage />
+            <div className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-100 text-gray-500 rounded-lg cursor-not-allowed">
+              <Clock className="w-5 h-5" />
+              <span>Event has ended</span>
+            </div>
           ) : availability.purchasedCount >= availability?.totalTickets ? (
             <div className="text-center p-4">
               <p className="text-lg font-semibold text-red-600">
-                Sorry, this event is sold out!
+                Sorry, this event is sold out
               </p>
             </div>
           ) : (
@@ -119,5 +107,3 @@ function JoinQueue({
     </div>
   );
 }
-
-export default JoinQueue;

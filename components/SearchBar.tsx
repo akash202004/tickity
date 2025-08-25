@@ -1,15 +1,27 @@
 "use client";
 
 import { Search } from "lucide-react";
-import Form from 'next/form'
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-function SearchBar() {
+export default function SearchBar() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
   return (
-    <div>
-      <Form action={"/search"} className="relative">
+    <div className="w-full max-w-4xl mx-auto">
+      <form onSubmit={handleSearch} className="relative">
         <input
           type="text"
-          name="q"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for events..."
           className="w-full py-3 px-4 pl-12 bg-white rounded-xl border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
         />
@@ -20,9 +32,7 @@ function SearchBar() {
         >
           Search
         </button>
-      </Form>
+      </form>
     </div>
   );
 }
-
-export default SearchBar;

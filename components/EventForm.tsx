@@ -1,16 +1,8 @@
 "use client";
 
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useToast } from "@/hooks/use-toast";
-import { useStorageUrl } from "@/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "convex/react";
-import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -19,10 +11,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "./ui/input";
+import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useUser } from "@clerk/nextjs";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useRouter } from "next/navigation";
+import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
-import { Button } from "./ui/button";
+import { Id } from "@/convex/_generated/dataModel";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useStorageUrl } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, "Event name is required"),
@@ -53,52 +54,60 @@ interface InitialEventData {
 
 interface EventFormProps {
   mode: "create" | "edit";
-  intialData?: InitialEventData;
+  initialData?: InitialEventData;
 }
 
-export default function EventForm({ mode, intialData }: EventFormProps) {
+export default function EventForm({ mode, initialData }: EventFormProps) {
   const { user } = useUser();
   const createEvent = useMutation(api.events.create);
   const updateEvent = useMutation(api.events.updateEvent);
   const router = useRouter();
-  const [isPending, startTrasnsition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
-  const currentImageUrl = useStorageUrl(intialData?.imageStorageId);
+  const currentImageUrl = useStorageUrl(initialData?.imageStorageId);
 
-  // image upload
+  // Image upload
   const imageInput = useRef<HTMLInputElement>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
   const updateEventImage = useMutation(api.storage.updateEventImage);
   const deleteImage = useMutation(api.storage.deleteImage);
-  const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
+
+  const [removedCurrentImage, setRemovedCurrentImage] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: intialData?.name ?? "",
-      description: intialData?.description ?? "",
-      location: intialData?.location ?? "",
-      eventDate: intialData ? new Date(intialData.eventDate) : new Date(),
-      price: intialData?.price ?? 0,
-      totalTickets: intialData?.totalTickets ?? 1,
+      name: initialData?.name ?? "",
+      description: initialData?.description ?? "",
+      location: initialData?.location ?? "",
+      eventDate: initialData ? new Date(initialData.eventDate) : new Date(),
+      price: initialData?.price ?? 0,
+      totalTickets: initialData?.totalTickets ?? 1,
     },
   });
 
   async function onSubmit(values: FormData) {
     if (!user?.id) return;
 
-    startTrasnsition(async () => {
+    startTransition(async () => {
       try {
         let imageStorageId = null;
+
+        // Handle image changes
         if (selectedImage) {
+          // Upload new image
           imageStorageId = await handleImageUpload(selectedImage);
         }
 
-        if (mode === "edit" && intialData?.imageStorageId) {
-          if (removeCurrentImage || selectedImage) {
-            await deleteImage({ storageId: intialData.imageStorageId });
+        // Handle image deletion/update in edit mode
+        if (mode === "edit" && initialData?.imageStorageId) {
+          if (removedCurrentImage || selectedImage) {
+            // Delete old image from storage
+            await deleteImage({
+              storageId: initialData.imageStorageId,
+            });
           }
         }
 
@@ -118,19 +127,23 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
 
           router.push(`/event/${eventId}`);
         } else {
-          if (!intialData) {
-            throw new Error("Intial event data is required for updates");
+          // Ensure initialData exists before proceeding with update
+          if (!initialData) {
+            throw new Error("Initial event data is required for updates");
           }
 
+          // Update event details
           await updateEvent({
-            eventId: intialData._id,
+            eventId: initialData._id,
             ...values,
             eventDate: values.eventDate.getTime(),
           });
 
-          if (imageStorageId || removeCurrentImage) {
+          // Update image - this will now handle both adding new image and removing existing image
+          if (imageStorageId || removedCurrentImage) {
             await updateEventImage({
-              eventId: intialData._id,
+              eventId: initialData._id,
+              // If we have a new image, use its ID, otherwise if we're removing the image, pass null
               storageId: imageStorageId
                 ? (imageStorageId as Id<"_storage">)
                 : null,
@@ -142,15 +155,14 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
             description: "Your event has been successfully updated.",
           });
 
-          router.push(`/event/${intialData._id}`);
+          router.push(`/event/${initialData._id}`);
         }
       } catch (error) {
-        console.error("Failed to handle event", error);
+        console.error("Failed to handle event:", error);
         toast({
           variant: "destructive",
-          title: "Uh oh! Something went wrong",
-          description:
-            "There was a problem with your request. Please try again.",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your request.",
         });
       }
     });
@@ -167,7 +179,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
       const { storageId } = await result.json();
       return storageId;
     } catch (error) {
-      console.error("Failed to upload image", error);
+      console.error("Failed to upload image:", error);
       return null;
     }
   }
@@ -187,6 +199,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Form fields */}
         <div className="space-y-4">
           <FormField
             control={form.control}
@@ -209,7 +222,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Textarea {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -235,7 +248,7 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
             name="eventDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date</FormLabel>
+                <FormLabel>Event Date</FormLabel>
                 <FormControl>
                   <Input
                     type="date"
@@ -299,13 +312,13 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
             )}
           />
 
-          {/* image upload */}
+          {/* Image Upload */}
           <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">
               Event Image
             </label>
             <div className="mt-1 flex items-center gap-4">
-              {imagePreview || (!removeCurrentImage && currentImageUrl) ? (
+              {imagePreview || (!removedCurrentImage && currentImageUrl) ? (
                 <div className="relative w-32 aspect-square bg-gray-100 rounded-lg">
                   <Image
                     src={imagePreview || currentImageUrl!}
@@ -318,14 +331,14 @@ export default function EventForm({ mode, intialData }: EventFormProps) {
                     onClick={() => {
                       setSelectedImage(null);
                       setImagePreview(null);
-                      setRemoveCurrentImage(true);
+                      setRemovedCurrentImage(true);
                       if (imageInput.current) {
                         imageInput.current.value = "";
                       }
                     }}
                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
                   >
-                    X
+                    ×
                   </button>
                 </div>
               ) : (

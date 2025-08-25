@@ -1,9 +1,9 @@
 "use client";
 
-import { createStripeConnectAccountLink } from "@/actions/createStripeConnectAccountLink";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { createStripeConnectAccountLink } from "@/app/actions/createStripeConnectAccountLink";
+import { Loader2, AlertCircle } from "lucide-react";
 
 export default function Refresh() {
   const params = useParams();
@@ -17,13 +17,12 @@ export default function Refresh() {
       if (connectedAccountId) {
         setAccountLinkCreatePending(true);
         setError(false);
-
         try {
           const { url } =
             await createStripeConnectAccountLink(connectedAccountId);
           window.location.href = url;
         } catch (error) {
-          console.error("Error creating account link: ", error);
+          console.error("Error creating account link:", error);
           setError(true);
         }
         setAccountLinkCreatePending(false);

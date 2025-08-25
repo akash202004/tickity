@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   /* config options here */
   images: {
     remotePatterns: [
+      { hostname: "upbeat-stoat-959.convex.cloud", protocol: "https" },
+      { hostname: "wary-anaconda-29.convex.cloud", protocol: "https" },
       { hostname: "amiable-herring-583.convex.cloud", protocol: "https" },
     ],
   },

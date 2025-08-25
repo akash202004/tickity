@@ -1,25 +1,25 @@
 "use client";
 
 import EventCard from "@/components/EventCard";
-import JoinQueue from "@/components/JoinQueue";
-import Spinner from "@/components/Spinner";
-import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useStorageUrl } from "@/lib/utils";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { CalendarDays, MapPin, Ticket, Users } from "lucide-react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
+import Spinner from "@/components/Spinner";
+import JoinQueue from "@/components/JoinQueue";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import { useStorageUrl } from "@/lib/utils";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
-function page() {
+export default function EventPage() {
   const { user } = useUser();
   const params = useParams();
-  const availability = useQuery(api.events.getEventAvailability, {
+  const event = useQuery(api.events.getById, {
     eventId: params.id as Id<"events">,
   });
-  const event = useQuery(api.events.getById, {
+  const availability = useQuery(api.events.getEventAvailability, {
     eventId: params.id as Id<"events">,
   });
   const imageUrl = useStorageUrl(event?.imageStorageId);
@@ -36,7 +36,6 @@ function page() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Image of the event */}
           {imageUrl && (
             <div className="aspect-[21/9] relative w-full">
               <Image
@@ -138,5 +137,3 @@ function page() {
     </div>
   );
 }
-
-export default page;

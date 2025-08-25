@@ -1,127 +1,99 @@
 "use client";
 
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { useUser } from "@clerk/nextjs";
-import { redirect, useParams } from "next/navigation";
-import Ticket from "@/components/Ticket";
-import Link from "next/link";
-import { ArrowLeft, Download, Share2 } from "lucide-react";
-import { useEffect } from "react";
+import TicketCard from "@/components/TicketCard";
+import { Ticket } from "lucide-react";
 
-export default function TicketPage() {
-  const params = useParams();
+export default function MyTicketsPage() {
   const { user } = useUser();
-  const ticket = useQuery(api.tickets.getTicketWithDetails, {
-    ticketId: params.id as Id<"tickets">,
+  const tickets = useQuery(api.events.getUserTickets, {
+    userId: user?.id ?? "",
   });
 
-  useEffect(() => {
-    if (!user) {
-      redirect("/");
-    }
+  if (!tickets) return null;
 
-    if (!ticket || ticket.userId !== user.id) {
-      redirect("/tickets");
-    }
+  const validTickets = tickets.filter((t) => t.status === "valid");
+  const otherTickets = tickets.filter((t) => t.status !== "valid");
 
-    if (!ticket.event) {
-      redirect("/tickets");
-    }
-  }, [user, ticket]);
-
-  if (!ticket || !ticket.event) {
-    return null;
-  }
+  const upcomingTickets = validTickets.filter(
+    (t) => t.event && t.event.eventDate > Date.now()
+  );
+  const pastTickets = validTickets.filter(
+    (t) => t.event && t.event.eventDate <= Date.now()
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8 space-y-8">
-          {/* Navigation and Actions */}
-          <div className="flex items-center justify-between">
-            <Link
-              href="/tickets"
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to My Tickets
-            </Link>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-                <Download className="w-4 h-4" />
-                <span className="text-sm">Save</span>
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-                <Share2 className="w-4 h-4" />
-                <span className="text-sm">Share</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Event Info Summary */}
-          <div
-            className={`bg-white p-6 rounded-lg shadow-sm border ${ticket.event.is_cancelled ? "border-red-200" : "border-gray-100"}`}
-          >
-            <h1 className="text-2xl font-bold text-gray-900">
-              {ticket.event.name}
-            </h1>
-            <p className="mt-1 text-gray-600">
-              {new Date(ticket.event.eventDate).toLocaleDateString()} at{" "}
-              {ticket.event.location}
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">My Tickets</h1>
+            <p className="mt-2 text-gray-600">
+              Manage and view all your tickets in one place
             </p>
-            <div className="mt-4 flex items-center gap-4">
-              <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  ticket.event.is_cancelled
-                    ? "bg-red-50 text-red-700"
-                    : "bg-green-50 text-green-700"
-                }`}
-              >
-                {ticket.event.is_cancelled ? "Cancelled" : "Valid Ticket"}
-              </span>
-              <span className="text-sm text-gray-500">
-                Purchased on {new Date(ticket.purchasedAt).toLocaleDateString()}
+          </div>
+          <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Ticket className="w-5 h-5" />
+              <span className="font-medium">
+                {tickets.length} Total Tickets
               </span>
             </div>
-            {ticket.event.is_cancelled && (
-              <p className="mt-4 text-sm text-red-600">
-                This event has been cancelled. A refund will be processed if it
-                hasn&apos;t been already.
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Ticket Component */}
-        <Ticket ticketId={ticket._id} />
+        {upcomingTickets.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Upcoming Events
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {upcomingTickets.map((ticket) => (
+                <TicketCard key={ticket._id} ticketId={ticket._id} />
+              ))}
+            </div>
+          </div>
+        )}
 
-        {/* Additional Information */}
-        <div
-          className={`mt-8 rounded-lg p-4 ${
-            ticket.event.is_cancelled
-              ? "bg-red-50 border-red-100 border"
-              : "bg-blue-50 border-blue-100 border"
-          }`}
-        >
-          <h3
-            className={`text-sm font-medium ${
-              ticket.event.is_cancelled ? "text-red-900" : "text-blue-900"
-            }`}
-          >
-            Need Help?
-          </h3>
-          <p
-            className={`mt-1 text-sm ${
-              ticket.event.is_cancelled ? "text-red-700" : "text-blue-700"
-            }`}
-          >
-            {ticket.event.is_cancelled
-              ? "For questions about refunds or cancellations, please contact our support team at team@papareact-tickr.com"
-              : "If you have any issues with your ticket, please contact our support team at team@papareact-tickr.com"}
-          </p>
-        </div>
+        {pastTickets.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Past Events
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pastTickets.map((ticket) => (
+                <TicketCard key={ticket._id} ticketId={ticket._id} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {otherTickets.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Other Tickets
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {otherTickets.map((ticket) => (
+                <TicketCard key={ticket._id} ticketId={ticket._id} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tickets.length === 0 && (
+          <div className="text-center py-12">
+            <Ticket className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900">
+              No tickets yet
+            </h3>
+            <p className="text-gray-600 mt-1">
+              When you purchase tickets, they&apos;ll appear here
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

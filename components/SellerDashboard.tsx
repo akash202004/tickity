@@ -1,15 +1,15 @@
 "use client";
-import { createStripeConnectAccountLink } from "@/actions/createStripeConnectAccountLink";
-import { createStripeConnectCustomer } from "@/actions/createStripeConnectCustomer";
+import { createStripeConnectAccountLink } from "@/app/actions/createStripeConnectAccountLink";
+import { createStripeConnectCustomer } from "@/app/actions/createStripeConnectCustomer";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { createStripeConnectLoginLink } from "@/actions/createStripeConnectLoginLink";
-import { getStripeConnectAccountStatus } from "@/actions/getStripeConnectAccountStatus";
-import type { AccountStatus } from "@/actions/getStripeConnectAccountStatus";
+import { createStripeConnectLoginLink } from "@/app/actions/createStripeConnectLoginLink";
+import { getStripeConnectAccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
+import type { AccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
 import { CalendarDays, Cog, Plus } from "lucide-react";
 import Link from "next/link";
 import Spinner from "./Spinner";
@@ -24,7 +24,7 @@ export default function SellerDashboard() {
   );
   const router = useRouter();
   const { user } = useUser();
-  const stripeConnectId = useQuery(api.users.getUserStripeConnectId, {
+  const stripeConnectId = useQuery(api.users.getUsersStripeConnectId, {
     userId: user?.id || "",
   });
 

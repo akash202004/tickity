@@ -42,8 +42,15 @@ export async function createRazorpayOrder({
     }
   );
 
+  console.log("Event owner Razorpay account ID:", razorpayAccountId);
+
+  // For development, we'll allow orders without Razorpay Route account
+  // In production, you should ensure all sellers have Route accounts
   if (!razorpayAccountId) {
-    throw new Error("Razorpay Route account not found for event owner!");
+    console.warn(
+      "No Razorpay Route account found for event owner, continuing with basic order"
+    );
+    // We'll continue without Route account for now
   }
 
   if (!queuePosition.offerExpiresAt) {

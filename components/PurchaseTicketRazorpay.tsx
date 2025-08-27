@@ -97,6 +97,7 @@ export default function PurchaseTicketRazorpay({
 
     try {
       setIsLoading(true);
+      console.log("Starting Razorpay order creation for event:", eventId);
 
       // Create Razorpay order
       const { orderId, amount, currency, razorpayKeyId } =
@@ -104,8 +105,11 @@ export default function PurchaseTicketRazorpay({
           eventId,
         });
 
+      console.log("Razorpay order created:", { orderId, amount, currency });
+
       // Load Razorpay script if not already loaded
       if (!window.Razorpay) {
+        console.log("Loading Razorpay script...");
         const script = document.createElement("script");
         script.src = "https://checkout.razorpay.com/v1/checkout.js";
         script.onload = () => initializeRazorpay();
@@ -115,6 +119,7 @@ export default function PurchaseTicketRazorpay({
       }
 
       function initializeRazorpay() {
+        console.log("Initializing Razorpay checkout...");
         const options: RazorpayOptions = {
           key: razorpayKeyId || "",
           amount: amount,
@@ -124,8 +129,12 @@ export default function PurchaseTicketRazorpay({
           order_id: orderId,
           handler: function (response: RazorpayResponse) {
             console.log("Payment successful:", response);
-            // Razorpay webhook will handle the rest
-            window.location.href = "/tickets/purchase-success";
+            console.log("Waiting for webhook processing...");
+            // Add a delay to ensure webhook has time to process
+            setTimeout(() => {
+              console.log("Redirecting to success page...");
+              window.location.href = "/tickets/purchase-success";
+            }, 2000); // 2 second delay
           },
           prefill: {
             name: user?.fullName || user?.firstName || "",
@@ -136,6 +145,7 @@ export default function PurchaseTicketRazorpay({
           },
           modal: {
             ondismiss: function () {
+              console.log("Payment modal dismissed");
               setIsLoading(false);
             },
           },
@@ -146,6 +156,7 @@ export default function PurchaseTicketRazorpay({
       }
     } catch (error) {
       console.error("Error creating Razorpay order:", error);
+      alert("Error creating payment order: " + (error as Error).message);
       setIsLoading(false);
     }
   };

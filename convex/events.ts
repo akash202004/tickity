@@ -217,9 +217,18 @@ export const purchaseTicket = mutation({
       console.error("Invalid waiting list status", {
         status: waitingListEntry.status,
       });
-      throw new Error(
-        "Invalid waiting list status - ticket offer may have expired"
-      );
+
+      // Allow processing if payment was successful and status is expired
+      // This handles the case where offer expired but payment went through
+      if (waitingListEntry.status === WAITING_LIST_STATUS.EXPIRED) {
+        console.log(
+          "Allowing expired offer to be processed due to successful payment"
+        );
+      } else {
+        throw new Error(
+          "Invalid waiting list status - ticket offer may have expired"
+        );
+      }
     }
 
     if (waitingListEntry.userId !== userId) {

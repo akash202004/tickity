@@ -1,17 +1,58 @@
 "use client";
 
-import { createStripeCheckoutSession } from "@/app/actions/createStripeCheckoutSession";
+import { createRazorpayOrder } from "@/app/actions/createRazorpayOrder";
 import { Id } from "@/convex/_generated/dataModel";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import ReleaseTicket from "./ReleaseTicket";
 import { Ticket } from "lucide-react";
 
-export default function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
-  const router = useRouter();
+// Types for Razorpay
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+declare global {
+  interface Window {
+    Razorpay: {
+      new (options: RazorpayOptions): RazorpayInstance;
+    };
+  }
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill: {
+    name: string;
+    email: string;
+  };
+  theme: {
+    color: string;
+  };
+  modal: {
+    ondismiss: () => void;
+  };
+}
+
+interface RazorpayInstance {
+  open(): void;
+}
+
+export default function PurchaseTicketRazorpay({
+  eventId,
+}: {
+  eventId: Id<"events">;
+}) {
   const { user } = useUser();
   const queuePosition = useQuery(api.waitingList.getQueuePosition, {
     eventId,
@@ -56,16 +97,55 @@ export default function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
 
     try {
       setIsLoading(true);
-      const { sessionUrl } = await createStripeCheckoutSession({
-        eventId,
-      });
 
-      if (sessionUrl) {
-        router.push(sessionUrl);
+      // Create Razorpay order
+      const { orderId, amount, currency, razorpayKeyId } =
+        await createRazorpayOrder({
+          eventId,
+        });
+
+      // Load Razorpay script if not already loaded
+      if (!window.Razorpay) {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => initializeRazorpay();
+        document.body.appendChild(script);
+      } else {
+        initializeRazorpay();
+      }
+
+      function initializeRazorpay() {
+        const options: RazorpayOptions = {
+          key: razorpayKeyId || "",
+          amount: amount,
+          currency: currency,
+          name: "Ticket Marketplace",
+          description: "Event Ticket Purchase",
+          order_id: orderId,
+          handler: function (response: RazorpayResponse) {
+            console.log("Payment successful:", response);
+            // Razorpay webhook will handle the rest
+            window.location.href = "/tickets/purchase-success";
+          },
+          prefill: {
+            name: user?.fullName || user?.firstName || "",
+            email: user?.emailAddresses?.[0]?.emailAddress || "",
+          },
+          theme: {
+            color: "#3399cc",
+          },
+          modal: {
+            ondismiss: function () {
+              setIsLoading(false);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
       }
     } catch (error) {
-      console.error("Error creating checkout session:", error);
-    } finally {
+      console.error("Error creating Razorpay order:", error);
       setIsLoading(false);
     }
   };
@@ -106,7 +186,7 @@ export default function PurchaseTicket({ eventId }: { eventId: Id<"events"> }) {
           className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white px-8 py-4 rounded-lg font-bold shadow-md hover:from-amber-600 hover:to-amber-700 transform hover:scale-[1.02] transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:hover:scale-100 text-lg"
         >
           {isLoading
-            ? "Redirecting to checkout..."
+            ? "Opening Razorpay checkout..."
             : "Purchase Your Ticket Now →"}
         </button>
 

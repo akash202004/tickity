@@ -1,68 +1,77 @@
 "use client";
-import { createStripeConnectAccountLink } from "@/app/actions/createStripeConnectAccountLink";
-import { createStripeConnectCustomer } from "@/app/actions/createStripeConnectCustomer";
+import { createRazorpayRouteAccount } from "@/app/actions/createRazorpayRouteAccount";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-
-import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
-import { createStripeConnectLoginLink } from "@/app/actions/createStripeConnectLoginLink";
-import { getStripeConnectAccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
-import type { AccountStatus } from "@/app/actions/getStripeConnectAccountStatus";
+import React, { useState, useEffect, useCallback } from "react";
+import { getRazorpayAccountStatus } from "@/app/actions/getRazorpayAccountStatus";
+import type { RazorpayAccountStatus } from "@/app/actions/getRazorpayAccountStatus";
 import { CalendarDays, Cog, Plus } from "lucide-react";
 import Link from "next/link";
 import Spinner from "./Spinner";
 
 export default function SellerDashboard() {
   const [accountCreatePending, setAccountCreatePending] = useState(false);
-  const [accountLinkCreatePending, setAccountLinkCreatePending] =
-    useState(false);
   const [error, setError] = useState(false);
-  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(
-    null
-  );
-  const router = useRouter();
+  const [accountStatus, setAccountStatus] =
+    useState<RazorpayAccountStatus | null>(null);
   const { user } = useUser();
-  const stripeConnectId = useQuery(api.users.getUsersStripeConnectId, {
+  const razorpayAccountId = useQuery(api.users.getUsersStripeConnectId, {
     userId: user?.id || "",
   });
 
   const isReadyToAcceptPayments =
-    accountStatus?.isActive && accountStatus?.payoutsEnabled;
+    accountStatus?.isActive && accountStatus?.paymentsEnabled;
 
-  useEffect(() => {
-    if (stripeConnectId) {
-      fetchAccountStatus();
+  const fetchAccountStatus = useCallback(async () => {
+    if (razorpayAccountId) {
+      try {
+        console.log("Fetching status for account:", razorpayAccountId);
+        const status = await getRazorpayAccountStatus(razorpayAccountId);
+        console.log("Account status received:", status);
+        setAccountStatus(status);
+        setError(false); // Clear any previous errors
+      } catch (error) {
+        console.error("Error fetching account status:", error);
+        setError(true);
+        // Set a default status to prevent UI issues
+        setAccountStatus({
+          isActive: false,
+          requiresInformation: true,
+          requirements: {
+            fields_needed: ["account_setup"],
+            pending_verification: [],
+          },
+          paymentsEnabled: false,
+          settlementsEnabled: false,
+        });
+      }
     }
-  }, [stripeConnectId]);
-
-  if (stripeConnectId === undefined) {
-    return <Spinner />;
-  }
+  }, [razorpayAccountId]);
 
   const handleManageAccount = async () => {
     try {
-      if (stripeConnectId && accountStatus?.isActive) {
-        const loginUrl = await createStripeConnectLoginLink(stripeConnectId);
-        window.location.href = loginUrl;
+      if (razorpayAccountId && accountStatus?.isActive) {
+        // For Razorpay, we'll redirect to their dashboard
+        // This would need to be implemented with Razorpay's dashboard access
+        console.log("Redirecting to Razorpay dashboard...");
+        alert("Razorpay dashboard integration would be implemented here");
       }
     } catch (error) {
-      console.error("Error accessing Stripe Connect portal:", error);
+      console.error("Error accessing Razorpay dashboard:", error);
       setError(true);
     }
   };
 
-  const fetchAccountStatus = async () => {
-    if (stripeConnectId) {
-      try {
-        const status = await getStripeConnectAccountStatus(stripeConnectId);
-        setAccountStatus(status);
-      } catch (error) {
-        console.error("Error fetching account status:", error);
-      }
+  useEffect(() => {
+    if (razorpayAccountId) {
+      fetchAccountStatus();
     }
-  };
+  }, [razorpayAccountId, fetchAccountStatus]);
+
+  if (razorpayAccountId === undefined) {
+    return <Spinner />;
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -111,25 +120,39 @@ export default function SellerDashboard() {
 
         <div className="p-6">
           {/* Account Creation Section */}
-          {!stripeConnectId && !accountCreatePending && (
+          {!razorpayAccountId && !accountCreatePending && (
             <div className="text-center py-8">
               <h3 className="text-xl font-semibold mb-4">
                 Start Accepting Payments
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4">
                 Create your seller account to start receiving payments securely
-                through Stripe
+                through Razorpay Route
               </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
+                <h4 className="font-medium text-blue-900 mb-2">
+                  Important Note:
+                </h4>
+                <p className="text-sm text-blue-800">
+                  This creates a development account for testing. In production,
+                  you&apos;ll need to:
+                </p>
+                <ol className="text-sm text-blue-800 mt-2 ml-4 list-decimal">
+                  <li>Apply for Razorpay Route through their dashboard</li>
+                  <li>Complete KYC verification</li>
+                  <li>Get your Route account approved</li>
+                </ol>
+              </div>
               <button
                 onClick={async () => {
                   setAccountCreatePending(true);
                   setError(false);
                   try {
-                    await createStripeConnectCustomer();
+                    await createRazorpayRouteAccount();
                     setAccountCreatePending(false);
                   } catch (error) {
                     console.error(
-                      "Error creating Stripe Connect customer:",
+                      "Error creating Razorpay Route account:",
                       error
                     );
                     setError(true);
@@ -138,13 +161,13 @@ export default function SellerDashboard() {
                 }}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Create Seller Account
+                Create Development Account
               </button>
             </div>
           )}
 
           {/* Account Status Section */}
-          {stripeConnectId && accountStatus && (
+          {razorpayAccountId && accountStatus && (
             <div className="space-y-6">
               {/* Status Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +199,7 @@ export default function SellerDashboard() {
                     <div className="flex items-center">
                       <svg
                         className={`w-5 h-5 ${
-                          accountStatus.chargesEnabled
+                          accountStatus.paymentsEnabled
                             ? "text-green-500"
                             : "text-gray-400"
                         }`}
@@ -190,7 +213,7 @@ export default function SellerDashboard() {
                         />
                       </svg>
                       <span className="ml-2">
-                        {accountStatus.chargesEnabled
+                        {accountStatus.paymentsEnabled
                           ? "Can accept payments"
                           : "Cannot accept payments yet"}
                       </span>
@@ -198,7 +221,7 @@ export default function SellerDashboard() {
                     <div className="flex items-center">
                       <svg
                         className={`w-5 h-5 ${
-                          accountStatus.payoutsEnabled
+                          accountStatus.settlementsEnabled
                             ? "text-green-500"
                             : "text-gray-400"
                         }`}
@@ -212,7 +235,7 @@ export default function SellerDashboard() {
                         />
                       </svg>
                       <span className="ml-2">
-                        {accountStatus.payoutsEnabled
+                        {accountStatus.settlementsEnabled
                           ? "Can receive payouts"
                           : "Cannot receive payouts yet"}
                       </span>
@@ -227,57 +250,44 @@ export default function SellerDashboard() {
                   <h3 className="text-sm font-medium text-yellow-800 mb-3">
                     Required Information
                   </h3>
-                  {accountStatus.requirements.currently_due.length > 0 && (
+                  {accountStatus.requirements.fields_needed.length > 0 && (
                     <div className="mb-3">
                       <p className="text-yellow-800 font-medium mb-2">
                         Action Required:
                       </p>
                       <ul className="list-disc pl-5 text-yellow-700 text-sm">
-                        {accountStatus.requirements.currently_due.map((req) => (
-                          <li key={req}>{req.replace(/_/g, " ")}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {accountStatus.requirements.eventually_due.length > 0 && (
-                    <div>
-                      <p className="text-yellow-800 font-medium mb-2">
-                        Eventually Needed:
-                      </p>
-                      <ul className="list-disc pl-5 text-yellow-700 text-sm">
-                        {accountStatus.requirements.eventually_due.map(
-                          (req) => (
+                        {accountStatus.requirements.fields_needed.map(
+                          (req: string) => (
                             <li key={req}>{req.replace(/_/g, " ")}</li>
                           )
                         )}
                       </ul>
                     </div>
                   )}
-                  {/* Only show Add Information button if there are requirements */}
-                  {!accountLinkCreatePending && (
-                    <button
-                      onClick={async () => {
-                        setAccountLinkCreatePending(true);
-                        setError(false);
-                        try {
-                          const { url } =
-                            await createStripeConnectAccountLink(
-                              stripeConnectId
-                            );
-                          router.push(url);
-                        } catch (error) {
-                          console.error(
-                            "Error creating Stripe Connect account link:",
-                            error
-                          );
-                          setError(true);
-                        }
-                        setAccountLinkCreatePending(false);
-                      }}
-                      className="mt-4 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
-                    >
-                      Complete Requirements
-                    </button>
+                  {accountStatus.requirements.pending_verification.length >
+                    0 && (
+                    <div>
+                      <p className="text-yellow-800 font-medium mb-2">
+                        Pending Verification:
+                      </p>
+                      <ul className="list-disc pl-5 text-yellow-700 text-sm">
+                        {accountStatus.requirements.pending_verification.map(
+                          (req: string) => (
+                            <li key={req}>{req.replace(/_/g, " ")}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                  {/* Note: Razorpay doesn't have onboarding links like Stripe */}
+                  {accountStatus.requiresInformation && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-blue-800 text-sm">
+                        Please contact Razorpay support to complete your account
+                        verification. Check your Razorpay dashboard for more
+                        details.
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
@@ -314,11 +324,6 @@ export default function SellerDashboard() {
           {accountCreatePending && (
             <div className="text-center py-4 text-gray-600">
               Creating your seller account...
-            </div>
-          )}
-          {accountLinkCreatePending && (
-            <div className="text-center py-4 text-gray-600">
-              Preparing account setup...
             </div>
           )}
         </div>

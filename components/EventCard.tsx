@@ -15,7 +15,7 @@ import {
   StarIcon,
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
-import PurchaseTicket from "./PurchaseTicket";
+import PurchaseTicketRazorpay from "./PurchaseTicketRazorpay";
 import { useRouter } from "next/navigation";
 import { useStorageUrl } from "@/lib/utils";
 import Image from "next/image";
@@ -131,7 +131,7 @@ export default function EventCard({ eventId }: { eventId: Id<"events"> }) {
       return (
         <div className="mt-4">
           {queuePosition.status === "offered" && (
-            <PurchaseTicket eventId={eventId} />
+            <PurchaseTicketRazorpay eventId={eventId} />
           )}
           {renderQueuePosition()}
           {queuePosition.status === "expired" && (
@@ -198,7 +198,7 @@ export default function EventCard({ eventId }: { eventId: Id<"events"> }) {
                   : "bg-green-50 text-green-700"
               }`}
             >
-              £{event.price.toFixed(2)}
+              ₹{event.price.toFixed(2)}
             </span>
             {availability.purchasedCount >= availability.totalTickets && (
               <span className="px-4 py-1.5 bg-red-50 text-red-700 font-semibold rounded-full text-sm">

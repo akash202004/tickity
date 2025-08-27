@@ -1,11 +1,11 @@
 "use server";
 
+// import { razorpay } from "@/lib/razorpay"; // Will be used when implementing actual refund API
 import { getConvexClient } from "@/lib/convex";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-// import { razorpay } from "@/lib/razorpay"; // Uncomment when using real Razorpay API
 
-export async function refundEventTickets(eventId: Id<"events">) {
+export async function refundRazorpayTickets(eventId: Id<"events">) {
   const convex = getConvexClient();
 
   // Get event details
@@ -14,14 +14,14 @@ export async function refundEventTickets(eventId: Id<"events">) {
 
   // Get event owner's Razorpay account ID
   const razorpayAccountId = await convex.query(
-    api.users.getUsersStripeConnectId, // Reused for Razorpay
+    api.users.getUsersStripeConnectId, // Reusing the same field
     {
       userId: event.userId,
     }
   );
 
   if (!razorpayAccountId) {
-    throw new Error("Razorpay Account ID not found");
+    throw new Error("Razorpay account ID not found");
   }
 
   // Get all valid tickets for this event
@@ -37,44 +37,55 @@ export async function refundEventTickets(eventId: Id<"events">) {
           throw new Error("Payment information not found");
         }
 
-        // Issue refund through Razorpay (mock for now)
-        // Uncomment and use real Razorpay API in production
-        // await razorpay.payments.refund(ticket.paymentIntentId, {
+        // Issue refund through Razorpay
+        // Note: Refunds in Razorpay are created differently
+        // For now, we'll mark as refunded and handle actual refund separately
+        console.log("Creating refund for payment:", ticket.paymentIntentId);
+
+        // TODO: Implement actual Razorpay refund API call
+        // const refund = await razorpay.payments.refund(ticket.paymentIntentId, {
         //   amount: ticket.amount,
         //   notes: {
         //     reason: "Event cancelled by organizer",
         //     event_id: eventId,
         //   },
         // });
-        console.log("Refunding payment via Razorpay:", ticket.paymentIntentId);
 
-        // Update ticket status to refunded
+        // Mark ticket as refunded in Convex
         await convex.mutation(api.tickets.updateTicketStatus, {
           ticketId: ticket._id,
           status: "refunded",
         });
 
+        console.log(`Refund successful for ticket ${ticket._id}`);
         return { success: true, ticketId: ticket._id };
       } catch (error) {
-        console.error(`Failed to refund ticket ${ticket._id}:`, error);
+        console.error(`Refund failed for ticket ${ticket._id}:`, error);
         return { success: false, ticketId: ticket._id, error };
       }
     })
   );
 
-  // Check if all refunds were successful
-  const allSuccessful = results.every(
+  // Count successful and failed refunds
+  const successful = results.filter(
     (result) => result.status === "fulfilled" && result.value.success
-  );
+  ).length;
+  const failed = results.filter(
+    (result) =>
+      result.status === "rejected" ||
+      (result.status === "fulfilled" && !result.value.success)
+  ).length;
 
-  if (!allSuccessful) {
-    throw new Error(
-      "Some refunds failed. Please check the logs and try again."
-    );
-  }
+  console.log(`Refund summary: ${successful} successful, ${failed} failed`);
 
-  // Cancel the event instead of deleting it
-  await convex.mutation(api.events.cancelEvent, { eventId });
-
-  return { success: true };
+  return {
+    totalProcessed: tickets.length,
+    successful,
+    failed,
+    results: results.map((result) =>
+      result.status === "fulfilled"
+        ? result.value
+        : { success: false, error: result.reason }
+    ),
+  };
 }

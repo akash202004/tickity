@@ -1,8 +1,26 @@
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+"use client";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import logo from "@/images/logo.png";
+import logo from "@/images/lg.png";
 import SearchBar from "./SearchBar";
+
+const SignInButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignInButton),
+  { ssr: false }
+);
+const SignedIn = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignedIn),
+  { ssr: false }
+);
+const SignedOut = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.SignedOut),
+  { ssr: false }
+);
+const UserButton = dynamic(
+  () => import("@clerk/nextjs").then((mod) => mod.UserButton),
+  { ssr: false }
+);
 
 function Header() {
   return (

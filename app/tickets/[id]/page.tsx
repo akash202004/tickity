@@ -49,11 +49,28 @@ export default function TicketPage() {
               Back to My Tickets
             </Link>
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
+              <button
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onClick={async () => {
+                  // Download ticket as PDF
+                  const element = document.getElementById("ticket-pdf");
+                  if (!element) return;
+                  const html2pdf = (await import("html2pdf.js")).default;
+                  html2pdf().from(element).save(`ticket-${ticket._id}.pdf`);
+                }}
+              >
                 <Download className="w-4 h-4" />
                 <span className="text-sm">Save</span>
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
+              <button
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
+                onClick={() => {
+                  // Share ticket link
+                  const url = window.location.href;
+                  navigator.clipboard.writeText(url);
+                  alert("Ticket link copied to clipboard!");
+                }}
+              >
                 <Share2 className="w-4 h-4" />
                 <span className="text-sm">Share</span>
               </button>
@@ -95,7 +112,9 @@ export default function TicketPage() {
         </div>
 
         {/* Ticket Component */}
-        <Ticket ticketId={ticket._id} />
+        <div id="ticket-pdf">
+          <Ticket ticketId={ticket._id} />
+        </div>
 
         {/* Additional Information */}
         <div

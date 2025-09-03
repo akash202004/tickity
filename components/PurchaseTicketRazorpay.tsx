@@ -1,6 +1,7 @@
 "use client";
 
 import { createRazorpayOrder } from "@/app/actions/createRazorpayOrder";
+import { purchaseTicketDirect } from "@/app/actions/purchaseTicketDirect";
 import { Id } from "@/convex/_generated/dataModel";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -127,14 +128,33 @@ export default function PurchaseTicketRazorpay({
           name: "Ticket Marketplace",
           description: "Event Ticket Purchase",
           order_id: orderId,
-          handler: function (response: RazorpayResponse) {
+          handler: async function (response: RazorpayResponse) {
             console.log("Payment successful:", response);
-            console.log("Waiting for webhook processing...");
-            // Add a delay to ensure webhook has time to process
-            setTimeout(() => {
-              console.log("Redirecting to success page...");
+
+            try {
+              // Directly create ticket after successful payment
+              if (!user || !queuePosition) {
+                alert(
+                  "User or queue position not found. Cannot create ticket."
+                );
+                return;
+              }
+              await purchaseTicketDirect({
+                eventId,
+                userId: user.id!,
+                waitingListId: queuePosition._id,
+                paymentId: response.razorpay_payment_id,
+                amount: amount,
+              });
+
+              console.log("Ticket created successfully, redirecting...");
               window.location.href = "/tickets/purchase-success";
-            }, 2000); // 2 second delay
+            } catch (error) {
+              console.error("Failed to create ticket:", error);
+              alert(
+                "Payment successful but ticket creation failed. Please contact support."
+              );
+            }
           },
           prefill: {
             name: user?.fullName || user?.firstName || "",

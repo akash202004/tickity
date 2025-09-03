@@ -74,7 +74,7 @@ Ticketr is a modern, real-time event ticketing platform built with Next.js, Conv
 
 - Node.js 18+
 - npm or yarn
-- Stripe Account
+- Razorpay Account
 - Clerk Account
 - Convex Account
 
